@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'war'
 
 sourceCompatibility = 1.8
 version = '1.0'
@@ -33,4 +34,44 @@ dependencies {
 
     testCompile  'org.testng:testng:6.+'
     testCompile  'org.jmock:jmock:2.6.+'
+}
+
+
+jettyVersion = "8.1.0.RC0"
+
+configurations {
+    jetty8
+}
+
+dependencies {
+    jetty8 "org.mortbay.jetty:jetty-runner:$jettyVersion"
+}
+
+task runJetty8(type: JavaExec) {
+    main = "org.mortbay.jetty.runner.Runner"
+    args = [war.archivePath]
+    classpath configurations.jetty8
+}
+
+
+buildscript {
+    repositories {
+        maven {
+            url 'http://dl.bintray.com/esistegalaber/maven/'
+        }
+    }
+    dependencies {
+        classpath 'org.absolutegalaber:yeoman-gradle-plugin:0.0.1'
+    }
+}
+
+apply plugin: 'org.absolutegalaber.yeoman'
+
+yeoman {
+    yeomanDir = 'src/yo'
+    useColors = true
+}
+
+war {
+    from 'src/yo/dist' // adds a file-set to the root of the archive
 }
