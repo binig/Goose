@@ -1,3 +1,40 @@
+import org.gradle.api.tasks.Exec
+import org.apache.tools.ant.taskdefs.condition.Os
+File yoDir = new File(projectDir,'src/yo')
+File yoDist = new File(yoDir,'dist')
+
+task npm(type: Exec) {
+    group = BasePlugin.BUILD_GROUP
+    workingDir yoDir
+    description = "Installs all Node.js dependencies defined in package.json"
+    commandLine = [ Os.isFamily(Os.FAMILY_WINDOWS) ? "npm.cmd":"npm", "install"]
+    inputs.file new File(yoDir,'package.json')
+    outputs.dir new File( yoDir,'node_modules')
+
+
+}
+
+task grunt(type: Exec, dependsOn :'npm') {
+    group = BasePlugin.BUILD_GROUP
+    workingDir "src/yo/"
+    description = "Grunt build"
+    commandLine = [ Os.isFamily(Os.FAMILY_WINDOWS) ? "grunt.cmd":"grunt", "build"]
+    inputs.files   fileTree(dir:  new File( yoDir,'app'))
+    outputs.dir yoDist
+
+}
+task gruntTest(type: Exec, dependsOn :'npm') {
+    group = "Verification"
+    workingDir yoDir
+    description = "Grunt test"
+    commandLine = [ Os.isFamily(Os.FAMILY_WINDOWS) ? "grunt.cmd":"grunt", "test"]
+    inputs.files   fileTree(dir:  new File( yoDir,'app'))
+    outputs.dir yoDist
+
+}
+
+
+
 apply plugin: 'java'
 apply plugin: 'war'
 
@@ -37,41 +74,14 @@ dependencies {
 }
 
 
-jettyVersion = "8.1.0.RC0"
-
-configurations {
-    jetty8
-}
-
-dependencies {
-    jetty8 "org.mortbay.jetty:jetty-runner:$jettyVersion"
-}
-
-task runJetty8(type: JavaExec) {
-    main = "org.mortbay.jetty.runner.Runner"
-    args = [war.archivePath]
-    classpath configurations.jetty8
-}
-
-
-buildscript {
-    repositories {
-        maven {
-            url 'http://dl.bintray.com/esistegalaber/maven/'
-        }
-    }
-    dependencies {
-        classpath 'org.absolutegalaber:yeoman-gradle-plugin:0.0.1'
-    }
-}
-
-apply plugin: 'org.absolutegalaber.yeoman'
-
-yeoman {
-    yeomanDir = 'src/yo'
-    useColors = true
-}
-
 war {
-    from 'src/yo/dist' // adds a file-set to the root of the archive
+    from yoDist // adds a file-set to the root of the archive
+}
+war.dependsOn grunt
+//test.dependsOn gruntTest
+
+clean{
+
+    delete yoDist
+
 }
