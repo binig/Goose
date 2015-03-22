@@ -22,10 +22,8 @@ angular.module('webappApp')
      // or any other node for processing!
      mediaStreamSource.connect(audioContext.destination);
     var url = URL.createObjectURL(stream);
- $scope.trustSrc = function(src) {
-    return $sce.trustAsResourceUrl(src);
-  }
-     $scope.$apply(function(){$scope['selfView']=url ;})
+
+     $scope.$apply(function(){$scope['selfView']=$sce.trustAsResourceUrl(url) ;})
 
      $scope.$on('$destroy', function iVeBeenDismissed() {
         localStream.stop();
