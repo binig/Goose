@@ -8,6 +8,7 @@
  * Controller of the webappApp
  */
 angular.module('webappApp')
-  .controller('MainCtrl', function ($scope) {
+  .controller('MainCtrl', function ($scope, UserService) {
+    $scope['users'] = UserService.getUsers();
 
   });

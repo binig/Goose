@@ -32,6 +32,10 @@ angular
         templateUrl: 'views/settings.html',
         controller: 'SettingsCtrl'
       })
+      .when('/rtcCall/:partnerId', {
+        templateUrl: 'views/rtccall.html',
+        controller: 'RtccallCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });

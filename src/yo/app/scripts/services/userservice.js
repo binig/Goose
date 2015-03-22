@@ -12,6 +12,11 @@ angular.module('webappApp')
     // AngularJS will instantiate a singleton by calling "new" on this function
     var self= this;
     self.getUsers = function() {
-    
+     return [
+     {id:123,name:'alpha 1'},
+     {id:124,name:'alpha 2'},
+     {id:125,name:'beta 1'},
+     {id:126,name:'delta 1'}
+     ]
     }
   });
