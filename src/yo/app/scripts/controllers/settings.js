@@ -9,7 +9,9 @@
  */
 angular.module('webappApp')
   .controller('SettingsCtrl', function ($scope,$sce) {
+  var localStream;
  function gotStream(stream) {
+    localStream = stream;
      window.AudioContext = window.AudioContext || window.webkitAudioContext;
      var audioContext = new AudioContext();
 
@@ -24,6 +26,10 @@ angular.module('webappApp')
     return $sce.trustAsResourceUrl(src);
   }
      $scope.$apply(function(){$scope['selfView']=url ;})
+
+     $scope.$on('$destroy', function iVeBeenDismissed() {
+        localStream.stop();
+     })
  }
 
  navigator.getUserMedia({audio:true, video:true}, gotStream, function() {});
