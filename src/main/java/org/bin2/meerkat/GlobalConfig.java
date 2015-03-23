@@ -10,6 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @ComponentScan(basePackages = {
         "org.bin2.meerkat.dao",
         "org.bin2.meerkat.service",
+        "org.bin2.meerkat.websocket",
 })
 @ImportResource({
 })

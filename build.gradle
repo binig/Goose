@@ -98,18 +98,18 @@ clean{
 
 }
 
-jettyVersion = "8.1.0.RC0"
+
 
 configurations {
-    jetty8
+    jetty
 }
 
 dependencies {
-    jetty8 "org.mortbay.jetty:jetty-runner:$jettyVersion"
+    jetty "org.eclipse.jetty:jetty-runner:9.+"
 }
 
-task runJetty8(type: JavaExec, dependsOn :'war') {
-    main = "org.mortbay.jetty.runner.Runner"
+task runJetty(type: JavaExec, dependsOn :'war') {
+    main = "org.eclipse.jetty.runner.Runner"
     args = [war.archivePath]
-    classpath configurations.jetty8
+    classpath configurations.jetty
 }

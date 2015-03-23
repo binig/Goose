@@ -11,16 +11,56 @@ angular.module('webappApp')
   .controller('RtccallCtrl', function ($scope,$routeParams,$sce) {
       var partnerId = $routeParams.partnerId;
        var localStream;
-       function gotStream(stream) {
-          localStream = stream;
-          var url = URL.createObjectURL(stream);
 
-           $scope.$apply(function(){$scope['selfView']=$sce.trustAsResourceUrl(url) ;})
 
-           $scope.$on('$destroy', function iVeBeenDismissed() {
-              localStream.stop();
-           })
+       var signalingChannel = new WebSocket("ws://localhost:8080/webRtcSignaling");
+       var pc;
+       var configuration = {};
+
+       // run start(true) to initiate a call
+       function start(isCaller) {
+           pc = new RTCPeerConnection(configuration);
+
+           // send any ice candidates to the other peer
+           pc.onicecandidate = function (evt) {
+               signalingChannel.send(JSON.stringify({ "candidate": evt.candidate }));
+           };
+
+           // once remote stream arrives, show it in the remote video element
+           pc.onaddstream = function (evt) {
+               remoteView.src = URL.createObjectURL(evt.stream);
+           };
+
+           // get the local stream, show it in the local video element and send it
+           navigator.getUserMedia({ "audio": true, "video": true }, function (stream) {
+                $scope.$apply(function(){$scope['selfView']=$sce.trustAsResourceUrl( URL.createObjectURL(stream)) ;})
+
+                $scope.$on('$destroy', function iVeBeenDismissed() {
+                     stream.stop();
+                 })
+
+               pc.addStream(stream);
+
+               if (isCaller)
+                   pc.createOffer(gotDescription);
+               else
+                   pc.createAnswer(pc.remoteDescription, gotDescription);
+
+               function gotDescription(desc) {
+                   pc.setLocalDescription(desc);
+                   signalingChannel.send(JSON.stringify({ "sdp": desc }));
+               }
+           });
        }
 
-       navigator.getUserMedia({audio:true, video:true}, gotStream, function() {});
+       signalingChannel.onmessage = function (evt) {
+           if (!pc)
+               start(false);
+
+           var signal = JSON.parse(evt.data);
+           if (signal.sdp)
+               pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+           else
+               pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+       };
   });
