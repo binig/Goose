@@ -12,15 +12,6 @@ angular.module('webappApp')
   var localStream;
  function gotStream(stream) {
     localStream = stream;
-     window.AudioContext = window.AudioContext || window.webkitAudioContext;
-     var audioContext = new AudioContext();
-
-     // Create an AudioNode from the stream
-     var mediaStreamSource = audioContext.createMediaStreamSource(stream);
-
-     // Connect it to destination to hear yourself
-     // or any other node for processing!
-     mediaStreamSource.connect(audioContext.destination);
     var url = URL.createObjectURL(stream);
 
      $scope.$apply(function(){$scope['selfView']=$sce.trustAsResourceUrl(url) ;})
