@@ -17,6 +17,7 @@ import java.util.List;
         "org.bin2.meerkat.action"
 })
 @ImportResource({
+        "classpath*:websocket-context.xml"
 })
 @Configuration
 public class MvcWebConfig extends WebMvcConfigurerAdapter {

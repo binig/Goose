@@ -97,3 +97,19 @@ clean{
     delete yoDist
 
 }
+
+jettyVersion = "8.1.0.RC0"
+
+configurations {
+    jetty8
+}
+
+dependencies {
+    jetty8 "org.mortbay.jetty:jetty-runner:$jettyVersion"
+}
+
+task runJetty8(type: JavaExec, dependsOn :'war') {
+    main = "org.mortbay.jetty.runner.Runner"
+    args = [war.archivePath]
+    classpath configurations.jetty8
+}
