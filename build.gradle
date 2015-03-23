@@ -14,7 +14,18 @@ task npm(type: Exec) {
 
 }
 
-task grunt(type: Exec, dependsOn :'npm') {
+task bower(type: Exec, dependsOn :'npm') {
+    group = BasePlugin.BUILD_GROUP
+    workingDir "src/yo/"
+    description = "Bower instasll"
+    commandLine = [ Os.isFamily(Os.FAMILY_WINDOWS) ? "bower.cmd":"bower", "install"]
+    inputs.file new File(yoDir,'bower.json')
+    outputs.dir new File( yoDir,'bower_components')
+
+}
+
+
+task grunt(type: Exec, dependsOn :'bower') {
     group = BasePlugin.BUILD_GROUP
     workingDir "src/yo/"
     description = "Grunt build"
@@ -23,7 +34,7 @@ task grunt(type: Exec, dependsOn :'npm') {
     outputs.dir yoDist
 
 }
-task gruntTest(type: Exec, dependsOn :'npm') {
+task gruntTest(type: Exec, dependsOn :'bower') {
     group = "Verification"
     workingDir yoDir
     description = "Grunt test"
