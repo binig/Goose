@@ -1,4 +1,4 @@
-package org.bin2.meerkat;
+package org.bin2.goose;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -8,9 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @EnableWebMvc
 @ComponentScan(basePackages = {
-        "org.bin2.meerkat.dao",
-        "org.bin2.meerkat.service",
-        "org.bin2.meerkat.websocket",
+        "org.bin2.goose.dao",
+        "org.bin2.goose.service",
+        "org.bin2.goose.websocket",
 })
 @ImportResource({
 })

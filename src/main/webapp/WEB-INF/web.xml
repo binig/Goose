@@ -5,8 +5,8 @@
          http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 	version="2.4">
 
-	<description>Meerkat</description>
-	<display-name>Meerkat</display-name>
+	<description>Goose</description>
+	<display-name>Goose</display-name>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
@@ -22,7 +22,7 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>org.bin2.meerkat.GlobalConfig</param-value>
+        <param-value>org.bin2.goose.GlobalConfig</param-value>
     </context-param>
 <!--
     <filter>
@@ -46,7 +46,7 @@
         </init-param>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>org.bin2.meerkat.MvcWebConfig</param-value>
+            <param-value>org.bin2.goose.MvcWebConfig</param-value>
         </init-param>
 
         <load-on-startup>1</load-on-startup>

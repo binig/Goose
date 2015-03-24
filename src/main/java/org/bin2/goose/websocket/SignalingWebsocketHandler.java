@@ -1,4 +1,4 @@
-package org.bin2.meerkat.websocket;
+package org.bin2.goose.websocket;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
