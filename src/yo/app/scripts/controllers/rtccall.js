@@ -15,7 +15,7 @@ angular.module('webappApp')
 
        var signalingChannel = new WebSocket("ws://localhost:8080/webRtcSignaling");
        var pc;
-       var configuration = {};
+       var configuration = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
 
        // run start(true) to initiate a call
        function start(isCaller) {
@@ -50,7 +50,7 @@ angular.module('webappApp')
                    pc.setLocalDescription(desc);
                    signalingChannel.send(JSON.stringify({ "sdp": desc }));
                }
-           });
+           }, function() {});
        }
 
        signalingChannel.onmessage = function (evt) {
@@ -63,4 +63,5 @@ angular.module('webappApp')
            else
                pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
        };
+       start(true);
   });
