@@ -23,7 +23,7 @@ angular.module('webappApp')
 
            // send any ice candidates to the other peer
            pc.onicecandidate = function (evt) {
-               signalingChannel.send(JSON.stringify({ "candidate": evt.candidate }));
+               signalingChannel.send(JSON.stringify({ "candidate": evt.candidate , messageType :"CANDIDATE", roomId :"leGrasCestLaVie"}));
            };
 
            // once remote stream arrives, show it in the remote video element
@@ -48,7 +48,7 @@ angular.module('webappApp')
 
                function gotDescription(desc) {
                    pc.setLocalDescription(desc);
-                   signalingChannel.send(JSON.stringify({ "sdp": desc }));
+                   signalingChannel.send(JSON.stringify({ "sdp": desc , messageType :"SDP", roomId :"leGrasCestLaVie"}));
                }
            }, function() {});
        }
@@ -63,5 +63,5 @@ angular.module('webappApp')
            else
                pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
        };
-       start(true);
+       start(partnerId==123);
   });

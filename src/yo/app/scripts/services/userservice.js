@@ -13,8 +13,8 @@ angular.module('webappApp')
     var self= this;
     self.getUsers = function() {
      return [
-     {id:123,name:'alpha 1'},
-     {id:124,name:'alpha 2'},
+     {id:123,name:'call'},
+     {id:124,name:'answer'},
      {id:125,name:'beta 1'},
      {id:126,name:'delta 1'}
      ]

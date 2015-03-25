@@ -1,12 +1,20 @@
 package org.bin2.goose.websocket;
 
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.bin2.goose.signaling.SignalingManagerImpl;
+import org.bin2.goose.signaling.SignalingMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Created by benoitroger on 23/03/15.
@@ -14,24 +22,79 @@ import org.springframework.web.socket.WebSocketSession;
 @Component
 public class SignalingWebsocketHandler  implements WebSocketHandler{
     private static Logger logger= LoggerFactory.getLogger(SignalingWebsocketHandler.class);
+
+    private Map<String, WebSocketSession> sessionById = Maps.newConcurrentMap();
+
+    private Gson gson = new GsonBuilder().create();
+
+    @Resource
+    private SignalingManagerImpl signalingManager;
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        logger.info("connection established {} " ,session);
+        logger.info("connection established {} " ,session.getId());
+        sessionById.put(session.getId(),session);
     }
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        logger.info("handleMessage {} {}" ,session, message.getPayload() );
+        logger.info("handleMessage {} {}" ,session.getId(), message.getPayload() );
+        if (message instanceof TextMessage) {
+            TextMessage msg = (TextMessage) message;
+            String text =msg.getPayload();
+            SignalingMessage sig = gson.fromJson(text, SignalingMessage.class);
+            // first check if there is already people trying to connect and send them this msg if already
+            List<String> sessionIds = signalingManager.getPartner(sig.getRoomId(),session.getId());
+            sessionIds.forEach(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    try {
+                        sessionById.get(s).sendMessage(message);
+                    } catch (IOException e) {
+                        logger.warn("error sending message to {} ",s,e);
+                    }
+                }
+            });
+            // store the signal
+            boolean newUser = signalingManager.addSignalingMessage(sig.getRoomId(),session.getId(),sig, text);
+            if (newUser) {
+                // send already stored
+                List<String> existingMsges =signalingManager.getMessageForRoom(sig.getRoomId(), session.getId());
+                existingMsges.stream().map((String s) -> new TextMessage(s)).forEach(new MessageSender(session.getId())
+
+                );
+            }
+        }
+
     }
+
+    private  class MessageSender implements Consumer<WebSocketMessage<?>> {
+        private final String destination;
+
+        public MessageSender(String destination) {
+            this.destination = destination;
+        }
+
+        @Override
+        public void accept(WebSocketMessage<?> webSocketMessage) {
+            try {
+                sessionById.get(destination).sendMessage(webSocketMessage);
+            } catch (IOException e) {
+                logger.warn("error sending message to {} ",destination,e);
+            }
+        }
+    }
+
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-
+        logger.info("handleMessage {}" ,session.getId(), exception );
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-
+        logger.info("connection closed {} {}  " ,session.getId(),closeStatus);
+        sessionById.remove(session.getId());
     }
 
     @Override

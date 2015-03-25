@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
         "org.bin2.goose.dao",
         "org.bin2.goose.service",
         "org.bin2.goose.websocket",
+        "org.bin2.goose.signaling",
 })
 @ImportResource({
 })

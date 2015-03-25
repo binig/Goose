@@ -115,3 +115,11 @@ task runJetty(type: JavaExec, dependsOn :'war') {
     args = [war.archivePath]
     classpath configurations.jetty
 }
+
+task debugJetty(type: JavaExec, dependsOn :'war') {
+    main = "org.eclipse.jetty.runner.Runner"
+    debug = true
+    args = [war.archivePath]
+    classpath configurations.jetty
+}
+
