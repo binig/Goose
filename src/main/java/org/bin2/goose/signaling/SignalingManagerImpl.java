@@ -1,5 +1,6 @@
 package org.bin2.goose.signaling;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.stereotype.Component;
@@ -17,10 +18,7 @@ public class SignalingManagerImpl {
 
     public boolean addSignalingMessage(String roomName, String sessionId, SignalingMessage msg, String value) {
         Room room = rooms.get(roomName);
-        if (room==null) {
-            room = new Room(roomName);
-            rooms.put(roomName,room);
-        }
+        Preconditions.checkNotNull(room);
         return room.addSignalingMessage(sessionId,msg, value);
     }
 
@@ -41,5 +39,11 @@ public class SignalingManagerImpl {
                    .filter((String s) -> !id.equals(s)).forEach((String s)->partners.add(s));
         }
         return partners;
+    }
+
+    public void createRoom(String roomId, String id) {
+        Preconditions.checkArgument(!rooms.containsKey(roomId));
+        Room room = new Room(roomId);
+        rooms.put(roomId,room);
     }
 }

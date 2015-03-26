@@ -11,7 +11,7 @@ angular.module('webappApp')
   .controller('RtccallCtrl', function ($scope,$routeParams,$sce) {
       var partnerId = $routeParams.partnerId;
        var localStream;
-
+      var roomId ="leGrasCestLaVie";
 
        var signalingChannel = new WebSocket("ws://localhost:8080/webRtcSignaling");
        var pc;
@@ -23,12 +23,14 @@ angular.module('webappApp')
 
            // send any ice candidates to the other peer
            pc.onicecandidate = function (evt) {
-               signalingChannel.send(JSON.stringify({ "candidate": evt.candidate , messageType :"CANDIDATE", roomId :"leGrasCestLaVie"}));
+               signalingChannel.send(JSON.stringify({ "candidate": evt.candidate , messageType :"CANDIDATE", roomId : roomId}));
            };
 
            // once remote stream arrives, show it in the remote video element
            pc.onaddstream = function (evt) {
-               remoteView.src = URL.createObjectURL(evt.stream);
+            // remoteView.src = URL.createObjectURL(evt.stream);
+                $scope.$apply(function(){$scope['partnerView']=$sce.trustAsResourceUrl( URL.createObjectURL(evt.stream)) ;})
+
            };
 
            // get the local stream, show it in the local video element and send it
@@ -44,11 +46,11 @@ angular.module('webappApp')
                if (isCaller)
                    pc.createOffer(gotDescription);
                else
-                   pc.createAnswer(pc.remoteDescription, gotDescription);
+                   pc.createAnswer( gotDescription);
 
                function gotDescription(desc) {
                    pc.setLocalDescription(desc);
-                   signalingChannel.send(JSON.stringify({ "sdp": desc , messageType :"SDP", roomId :"leGrasCestLaVie"}));
+                   signalingChannel.send(JSON.stringify({ "sdp": desc , messageType :"SDP", roomId :roomId}));
                }
            }, function() {});
        }
@@ -60,8 +62,38 @@ angular.module('webappApp')
            var signal = JSON.parse(evt.data);
            if (signal.sdp)
                pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-           else
+           else if (signal.candidate)
                pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
        };
-       start(partnerId==123);
+
+       this.createRoom = function(roomId) {
+          function create() {
+            signalingChannel.send(JSON.stringify({ messageType :"CREATE", roomId :roomId}));
+            start(true);
+          }
+          if (signalingChannel.readyState==1) {
+            create();
+          }  else {
+              signalingChannel.onopen= create;
+          }
+
+       }
+       this.joinRoom= function(roomId) {
+           function join() {
+             signalingChannel.send(JSON.stringify({ messageType :"JOIN", roomId :roomId}));
+
+           }
+           if (signalingChannel.readyState==1) {
+             join();
+           }  else {
+               signalingChannel.onopen= join;
+           }
+
+       }
+
+       if(partnerId==123) {
+          this.createRoom(roomId);
+       } else {
+          this.joinRoom(roomId)
+       }
   });

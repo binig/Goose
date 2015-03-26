@@ -5,7 +5,7 @@ package org.bin2.goose.signaling;
  */
 public class SignalingMessage {
     public enum Type {
-        SDP, CANDIDATE
+        SDP, CANDIDATE, JOIN, CREATE
     }
 
     private final Type messageType;

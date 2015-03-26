@@ -43,26 +43,20 @@ public class SignalingWebsocketHandler  implements WebSocketHandler{
             TextMessage msg = (TextMessage) message;
             String text =msg.getPayload();
             SignalingMessage sig = gson.fromJson(text, SignalingMessage.class);
-            // first check if there is already people trying to connect and send them this msg if already
-            List<String> sessionIds = signalingManager.getPartner(sig.getRoomId(),session.getId());
-            sessionIds.forEach(new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                    try {
-                        sessionById.get(s).sendMessage(message);
-                    } catch (IOException e) {
-                        logger.warn("error sending message to {} ",s,e);
-                    }
-                }
-            });
-            // store the signal
-            boolean newUser = signalingManager.addSignalingMessage(sig.getRoomId(),session.getId(),sig, text);
-            if (newUser) {
-                // send already stored
-                List<String> existingMsges =signalingManager.getMessageForRoom(sig.getRoomId(), session.getId());
-                existingMsges.stream().map((String s) -> new TextMessage(s)).forEach(new MessageSender(session.getId())
+            switch(sig.getMessageType()) {
+                case CREATE:
+                    signalingManager.createRoom(sig.getRoomId(),session.getId());
+                    break;
+                case JOIN:
+                    List<String> existingMsges =signalingManager.getMessageForRoom(sig.getRoomId(), session.getId());
+                    existingMsges.stream().map((String s) -> new TextMessage(s)).forEach(new MessageSender(session.getId()));
 
-                );
+                    break;
+                case SDP:
+                case CANDIDATE:
+                    signalingManager.addSignalingMessage(sig.getRoomId(),session.getId(),sig, text);
+                    signalingManager.getPartner(sig.getRoomId(),session.getId()).stream().forEach(new MessageBroadcast(message));
+                    break;
             }
         }
 
@@ -85,7 +79,22 @@ public class SignalingWebsocketHandler  implements WebSocketHandler{
         }
     }
 
+    private  class MessageBroadcast implements Consumer<String> {
+        private final WebSocketMessage<?> message;
 
+        public MessageBroadcast(WebSocketMessage<?> message) {
+            this.message = message;
+        }
+
+        @Override
+        public void accept(String destination) {
+            try {
+                sessionById.get(destination).sendMessage(message);
+            } catch (IOException e) {
+                logger.warn("error sending message to {} ",destination,e);
+            }
+        }
+    }
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         logger.info("handleMessage {}" ,session.getId(), exception );
