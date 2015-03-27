@@ -12,8 +12,14 @@ angular.module('webappApp')
       var partnerId = $routeParams.partnerId;
        var localStream;
       var roomId ="leGrasCestLaVie";
-
-       var signalingChannel = new WebSocket("ws://localhost:8080/webRtcSignaling");
+      var host = window.location.host;
+      var port = window.location.port;
+      // if grunt serve
+      if (port ==9000) {
+          host =  window.location.hostname +":8080";
+      }
+      console.log("ws://"+host+"/webRtcSignaling");
+       var signalingChannel = new WebSocket("ws://"+host+"/webRtcSignaling");
        var pc;
        var configuration = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
 
